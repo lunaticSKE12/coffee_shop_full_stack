@@ -10,15 +10,7 @@ from .auth.auth import AuthError, requires_auth
 app = Flask(__name__)
 setup_db(app)
 # CORS(app)
-
-'''
-    Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-    '''
 CORS(app, resources={'/': {'origins': '*'}})
-
-'''
-    Use the after_request decorator to set Access-Control-Allow
-    '''
 
 
 @app.after_request
@@ -38,6 +30,15 @@ uncomment the following line to initialize the datbase
 db_drop_and_create_all()
 
 # ROUTES
+
+
+@app.route('/')
+def handler():
+    return jsonify({
+        "success": True
+    })
+
+
 '''
 implement endpoint
     GET /drinks
@@ -71,7 +72,7 @@ implement endpoint
 
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
-def get_drinks_detail(token):
+def get_drinks_detail(payload):
     drinks = Drink.query.all()
     drinks = [drink.long() for drink in drinks]
 
@@ -94,39 +95,17 @@ implement endpoint
 
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def post_drinks(token):
+def post_drinks(payload):
     body = request.get_json()
     title = body.get('title', None)
-    recipe = body.get('recipe', None)
+    recipe = str(json.dumps(data.get('recipe', None)))
 
-    drink = Drink(title=title, recipe=json.dumps(recipe))
+    drink = Drink(title=title, recipe=recipe)
     drink.insert()
-    drink = drink.long()
     return jsonify({
         'success': True,
-        'drink': drink
+        'drink': [drink.long()]
     }), 200
-
-
-# @app.route('/drinks', methods=['POST'])
-# @requires_auth('post:drinks')
-# def new_drink():
-#     body = request.get_json()
-#     title = body.get('title', None)
-#     recipe = body.get('recipe', None)
-
-#     new_drink = Drink()
-#     new_drink.title = title
-#     new_drink.recipe = recipe
-
-#     new_drink.insert()
-
-#     new_drink = new_drink.long()
-
-#     return jsonify({
-#         'success': True,
-#         'drink': new_drink
-#     }), 200
 
 
 '''
@@ -151,7 +130,7 @@ def update_drinks(id):
 
     body = request.get_json()
     title = body.get('title', None)
-    recipe = body.get('recipe', None)
+    recipe = str(json.dumps(data.get('recipe', None)))
 
     if title is not None:
         drink.title = title
