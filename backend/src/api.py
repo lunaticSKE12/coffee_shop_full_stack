@@ -9,29 +9,12 @@ from .auth.auth import AuthError, requires_auth
 
 app = Flask(__name__)
 setup_db(app)
-# CORS(app)
-CORS(app, resources={'/': {'origins': '*'}})
-
-
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Headers',
-                         'Content-Type,Authorization,true')
-    response.headers.add('Access-Control-Allow-Methods',
-                         'GET,PUT,POST,DELETE,OPTIONS')
-    return response
+CORS(app)
 
 
 db_drop_and_create_all()
 
 # ROUTES
-
-
-@app.route('/')
-def handler():
-    return jsonify({
-        "success": True
-    })
 
 
 @app.route('/drinks', methods=['GET'])
@@ -47,7 +30,7 @@ def get_drinks():
 
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
-def get_drinks_detail(payload):
+def get_drinks_details(token):
     drinks = Drink.query.all()
     drinks = [drink.long() for drink in drinks]
 
@@ -62,7 +45,8 @@ def get_drinks_detail(payload):
 def post_drinks(payload):
     body = request.get_json()
     title = body.get('title', None)
-    recipe = str(json.dumps(data.get('recipe', None)))
+    recipe = json.dumps(body.get('recipe', None))
+    print(recipe)
 
     drink = Drink(title=title, recipe=recipe)
     drink.insert()
@@ -81,7 +65,7 @@ def update_drinks(id):
 
     body = request.get_json()
     title = body.get('title', None)
-    recipe = str(json.dumps(data.get('recipe', None)))
+    recipe = str(json.dumps(body.get('recipe', None)))
 
     if title is not None:
         drink.title = title
