@@ -44,23 +44,32 @@ def get_drinks_details(token):
 @requires_auth('post:drinks')
 def post_drinks(payload):
     body = request.get_json()
-    title = body['title']
-    recipe = json.dumps(body['recipe'])
 
-    drink = Drink(title=title, recipe=recipe)
-    drink.insert()
-    return jsonify({
-        'success': True,
-        'drink': drink.long()
-    }), 200
+    try:
+        title = body['title']
+        recipe = json.dumps(body['recipe'])
+
+        drink = Drink(title=title, recipe=recipe)
+        drink.insert()
+        return jsonify({
+            'success': True,
+            'drink': drink.long()
+        }), 200
+    except:
+        abort(422)
 
 
 @app.route('/drinks/<id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
 def update_drink(payload, id):
     drink = Drink.query.get(id)
-    if not drink:
-        abort(404)
+    if drink is None:
+        return json.dumps({
+            'success':
+            False,
+            'error':
+            'Drink #' + id + ' not found to be edited'
+        }), 404
 
     body = request.get_json()
     title = body['title']
