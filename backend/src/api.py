@@ -44,9 +44,8 @@ def get_drinks_details(token):
 @requires_auth('post:drinks')
 def post_drinks(payload):
     body = request.get_json()
-    title = body.get('title', None)
-    recipe = json.dumps(body.get('recipe', None))
-    print(recipe)
+    title = body['title']
+    recipe = json.dumps(body['recipe'])
 
     drink = Drink(title=title, recipe=recipe)
     drink.insert()
@@ -56,21 +55,21 @@ def post_drinks(payload):
     }), 200
 
 
-@app.route('/drinks/<int:id>', methods='PATCH')
+@app.route('/drinks/<id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def update_drinks(id):
+def update_drink(payload, id):
     drink = Drink.query.get(id)
     if not drink:
         abort(404)
 
     body = request.get_json()
-    title = body.get('title', None)
-    recipe = str(json.dumps(body.get('recipe', None)))
+    title = body['title']
+    recipe = body['recipe']
 
-    if title is not None:
+    if title:
         drink.title = title
-    if recipe is not None:
-        drink.recipe = recipe
+    if recipe:
+        drink.recipe = json.dumps(recipe)
     drink.update()
 
     return jsonify({
