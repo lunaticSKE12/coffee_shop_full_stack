@@ -54,7 +54,7 @@ def post_drinks(payload):
         return jsonify({
             'success': True,
             'drink': drink.long()
-        }), 200
+        }), 201
     except:
         abort(422)
 
@@ -89,7 +89,7 @@ def update_drink(payload, id):
 
 @app.route('/drinks/<int:id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def delete_drinks(id):
+def delete_drinks(payload, id):
     drinks = Drink.query.get(id)
     if not drinks:
         abort(404)
